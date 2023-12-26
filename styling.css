@@ -19,6 +19,17 @@
     background-color: var(--second-color);
 }
 
+/* Public For All */
+.hide {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+/* Public For All */
+
 #app {
     min-width: 98lvw;
     min-height: 100lvh;
@@ -62,7 +73,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: var(--show-trans);
+    transition: all var(--show-trans);
 }
 .main_menu h1,
 .main_menu h2 {
@@ -114,7 +125,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: var(--show-trans);
+
+    transition: all var(--show-trans);
+    opacity: 0;
+    visibility: hidden;
 }
 
 .playing_content h2 {
@@ -139,6 +153,12 @@
 }
 .playing_content .content .box {
     background: #ff000066;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--main-color);
+    font-size: 35px;
+    font-weight: 600;
 }
 
 

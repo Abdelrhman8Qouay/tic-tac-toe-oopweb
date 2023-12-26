@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XO tic tac toe )</title>
     <link rel="stylesheet" href="styling.css">
+    <script src="classes.js" defer></script>
     <script src="game.js" defer></script>
 </head>
 <body>
@@ -18,39 +19,39 @@
         </div>
 
         <!-- Main Menu -->
-        <!-- <div class="main_menu">
+        <div class="main_menu">
             <h2>tic4toe</h2>
             <h1>X1 vs O2</h1>
             <div class="content">
                 <ul>
-                    <li>start</li>
-                    <li>vs user</li>
+                    <li onclick="hideShow('game'); gamePlay()">start</li>
+                    <li onclick="hideShow('game')">vs user</li>
                     <li>settings</li>
                 </ul>
             </div>
-        </div> -->
+        </div>
 
 
         <!-- Playing Table -->
         <div class="playing_content">
             <h2>tic <span>Game</span> toe</h2>
             <div class="content" id="board">
-                <div class="box1 box"></div>
-                <div class="box2 box"></div>
-                <div class="box3 box"></div>
-                <div class="box4 box"></div>
-                <div class="box5 box"></div>
-                <div class="box6 box"></div>
-                <div class="box7 box"></div>
-                <div class="box8 box"></div>
-                <div class="box9 box"></div>
+                <div class="box1 box" data-index="0"></div>
+                <div class="box2 box" data-index="1"></div>
+                <div class="box3 box" data-index="2"></div>
+                <div class="box4 box" data-index="3"></div>
+                <div class="box5 box" data-index="4"></div>
+                <div class="box6 box" data-index="5"></div>
+                <div class="box7 box" data-index="6"></div>
+                <div class="box8 box" data-index="7"></div>
+                <div class="box9 box" data-index="8"></div>
             </div>
             <div class="info">
                 <div class="player_1 left">
-                    <div><span id="playerName">Player 1</span>: <span id="playerSymbol">X</span></div>
+                    <div><span id="playerName1">Player 1</span>: <span id="playerSymbol1">X</span></div>
                 </div>
                 <div class="player_2 right">
-                    <div><span id="playerSymbol">O</span> :<span id="playerName">Player 2</span></div>
+                    <div><span id="playerSymbol2">O</span> :<span id="playerName2">Player 2</span></div>
                 </div>
             </div>
         </div>

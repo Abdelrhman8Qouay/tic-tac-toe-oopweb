@@ -2,12 +2,24 @@
 
 
 
+function gamePlay() {
+    var newGame = new Game('human', 150);
+    newGame.start_game(playerName1, playerSymbol1, playerName2, playerSymbol2, boxes_game);
+}
+
+// App Functions Needed
+function hideShow(where) {
+    if(where == 'game' || !where) {
+        addClass(main_menu, 'hide');
+        addClass(playing_content, 'show');
+    } else {
+        removeClass(main_menu, 'hide');
+        removeClass(playing_content, 'show');
+    }
+}
 
 
-
-
-
-
+// Static Functions Work
 function playAudio(aud, audioLoop) {
     if(audioLoop) {
         aud.addEventListener('ended', function() {
@@ -48,4 +60,9 @@ function removeClass(el, className)
         var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
         el.className = el.className.replace(reg, ' ');
     }
+}
+
+
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
