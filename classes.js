@@ -16,12 +16,15 @@ class Player {
     symbol= '';
     wins = 0;
     my_turn = false;
-    constructor() {
-        // Player.player_number++;
+
+    constructor(isFirst) {
+        if(isFirst) Player.player_number++;
+        this.is_first = isFirst;
+        if(Player.player_number == 1) this.my_turn = true;
     }
 
     choose_name() {
-        Player.player_number++;
+        if(!this.is_first)Player.player_number++;
         var chosen = prompt(`Player ${Player.player_number}, Write your name (max: 15 letters)(numbers and characters only)`, `Player ${Player.player_number}`);
         while (true) {
             if(chosen.length > 15) {
@@ -35,6 +38,9 @@ class Player {
             this.name = chosen;
             break;
         }
+        if(this.is_first) {
+            playerName1.innerText = chosen;
+        } else playerName2.innerText = chosen;
     }
 
     static default_symbol() {
@@ -59,6 +65,9 @@ class Player {
             this.symbol = chosen.toUpperCase();
             break;
         }
+        if(this.is_first) {
+            playerSymbol1.innerText = chosen;
+        } else playerSymbol2.innerText = chosen;
     }
 }
 
@@ -96,18 +105,47 @@ class Board{
     }
 }
 
-class Settings {}
+class UI {
+    static reset_board() {
+        boxes_game.forEach(box => box.innerHTML = '');
+    }
+
+    static reset_all_info() {
+        boxes_game.forEach(box => box.innerHTML = '');
+        playerName1.innerText = 'player 1';
+        playerSymbol1.innerText = 'X';
+        playerName2.innerText = 'player 2';
+        playerSymbol2.innerText = 'O';
+    }
+
+    static reset_players() {
+        playerName1.innerText = 'player 1';
+        playerSymbol1.innerText = 'X';
+        playerName2.innerText = 'player 2';
+        playerSymbol2.innerText = 'O';
+    }
+
+    static change_element_info(ele, value) {
+        ele.innerText = value;
+    }
+    static reset_nested_info(element) {
+        element.forEach(ele => ele.innerHTML = '');
+    }
+}
 
 class Game {
     static total_gaming = 0;
-    constructor(gameType, gameTime, players) {
+    eventFunction = null;
+
+    constructor(gameType, gameTime, players, boxesElements) {
         this.players = {
-            player1: players ? players.player1 : new Player(),
+            player1: players ? players.player1 : new Player(true),
             player2: players ? players.player2 : new Player(),
         };
         this.board = new Board();
         this.game_type = gameType || 'human'; // pc or human
         this.game_time = gameTime || 140;
+        this.boxes_elements = boxesElements || '';
         Game.total_gaming++;
     }
 
@@ -142,23 +180,19 @@ class Game {
         }
     }
 
-    start_game(name1_ele,sym1_ele,name2_ele, sym2_ele, boxes) {
+    start_game(startType) {
+        console.log('in playing game now')
         if(this.game_type == 'human') {
             // get users info
-            if(!this.players.player1.name || !this.players.player2.name) {
+            if(startType != 'restarted') {
                 this.players.player1.choose_name();
                 this.players.player1.choose_symbol();
                 this.players.player2.choose_name();
                 this.players.player2.choose_symbol();
-                name1_ele.innerText = this.players.player1.name;
-                sym1_ele.innerText = this.players.player1.symbol;
-                name2_ele.innerText = this.players.player2.name;
-                sym2_ele.innerText = this.players.player2.symbol;
             }
 
-            this.players.player1.my_turn = true;
-            boxes.forEach(box => {
-                box.addEventListener('click', async ()=> {
+            this.boxes_elements.forEach(box => {
+                box.onclick = async ()=> {
                     if(!this.board.list[box.dataset['index']]) { // if empty box >>
                         var symbolNow = this.players.player1.my_turn ? this.players.player1.symbol : this.players.player2.symbol;
                         this.board.update_board(box.dataset['index'], symbolNow);
@@ -171,21 +205,31 @@ class Game {
                         // if win(return true that meaning end the game)
                         if(Game.game_logic_winor(this.board.list) || this.board.board_isfull()) {
                             this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2);
+                            this.destroy_game();
+                            return;
                         }
 
                         // change the turn of players
                         this.player_turn('my_turn');
                     }
-                })
+                }
             })
         }
     }
+
     end_game(playerWon) {
+        console.log('in end game')
+        playerWon.wins++;
         if(playerWon) {
             alert(`the Winner Player is ${playerWon.name}`);
         } else {
             alert('non Winner in this Game....');
         }
+
+        // make all are empty to use again
+        this.player_turn('default');
+        boxes_game.forEach(box => box.innerHTML = '');
+
         var confirming = confirm('do you want to restart the game?');
         if(confirming) {
             this.restart_game();
@@ -193,24 +237,25 @@ class Game {
             this.game_result();
             hideShow('back');
         }
-        // make all are empty to use again
-        this.board.reset_board();
-        this.player_turn('default');
-        boxes_game.forEach(box => box.innerHTML = '');
     }
+
     restart_game() {
-        Player.player_number = 0;
-        var newGame = new Game(this.game_type, this.game_time, this.players);
-        newGame.start_game(playerName1, playerSymbol1, playerName2, playerSymbol2, boxes_game);
+        console.log('in restart game')
+        this.destroy_game();
+        var newGame = new Game(this.game_type, this.game_time, this.players, this.boxes_elements);
+        newGame.start_game('restarted');
     }
+
     game_result() {
+        console.log('in results game')
         if(this.players.player1.wins > this.players.player2.wins) {
-            alert(`the Winner Player is ${this.players.player1.name}`);
-        } else if (this.players.player1.wins == this.players.player2.wins) {
-            alert(`No one win, with total games: ${Game.total_gaming}`);
+            alert(`the Final Winner Player is ${this.players.player1.name} with total wins: ${this.players.player1.wins}`);
+        } else if (this.players.player1.wins < this.players.player2.wins) {
+            alert(`the Final Winner Player is ${this.players.player2.name} with total wins: ${this.players.player2.wins}`);
         } else {
-            alert(`the Winner Player is ${this.players.player2.name}`);
+            alert(`No one win, with total games: ${Game.total_gaming}`);
         }
+        this.destroy_game();
         Game.total_gaming = 0;
     }
 
@@ -227,5 +272,13 @@ class Game {
                 this.players.player2.my_turn = false;
             }
         }
+    }
+
+    destroy_game() {
+        console.log('in destroying the game')
+        Player.player_number = 0;
+        this.boxes_elements.forEach(box => {
+            box.onclick = null;
+        })
     }
 }

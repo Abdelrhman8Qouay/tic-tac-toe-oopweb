@@ -3,8 +3,8 @@
 
 
 function gamePlay() {
-    var newGame = new Game('human', 150);
-    newGame.start_game(playerName1, playerSymbol1, playerName2, playerSymbol2, boxes_game);
+    var newGame = new Game('human', 150, null, boxes_game);
+    newGame.start_game();
 }
 
 // App Functions Needed
