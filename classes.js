@@ -12,6 +12,10 @@ playerSymbol2 = document.getElementById('playerSymbol2');
 
 class Player {
     static player_number = 0;
+    static pc_player_info = {
+        name: 'AI',
+        symbol: 'O',
+    };
     name= '';
     symbol= '';
     wins = 0;
@@ -111,7 +115,10 @@ class UI {
     }
 
     static reset_all_info() {
-        boxes_game.forEach(box => box.innerHTML = '');
+        boxes_game.forEach(box => {
+            box.onclick = null;
+            box.innerHTML = '';
+        });
         playerName1.innerText = 'player 1';
         playerSymbol1.innerText = 'X';
         playerName2.innerText = 'player 2';
@@ -131,13 +138,18 @@ class UI {
     static reset_nested_info(element) {
         element.forEach(ele => ele.innerHTML = '');
     }
+
+    static changeAIPlayerInfo(name, symbol) {
+        Player.pc_player_info.name = name;
+        Player.pc_player_info.symbol = symbol;
+    }
 }
 
 class Game {
     static total_gaming = 0;
     eventFunction = null;
 
-    constructor(gameType, gameTime, players, boxesElements) {
+    constructor(gameType, gameTime, players) {
         this.players = {
             player1: players ? players.player1 : new Player(true),
             player2: players ? players.player2 : new Player(),
@@ -145,11 +157,10 @@ class Game {
         this.board = new Board();
         this.game_type = gameType || 'human'; // pc or human
         this.game_time = gameTime || 140;
-        this.boxes_elements = boxesElements || '';
         Game.total_gaming++;
     }
 
-    static game_logic_winor(board_list) {
+    static game_winner_logic(board_list) {
         if(board_list[0] == board_list[1] && board_list[1] == board_list[2] && board_list[2]) {
             console.log('0 1 2')
             return true
@@ -191,26 +202,78 @@ class Game {
                 this.players.player2.choose_symbol();
             }
 
-            this.boxes_elements.forEach(box => {
+            boxes_game.forEach(box => {
                 box.onclick = async ()=> {
                     if(!this.board.list[box.dataset['index']]) { // if empty box >>
                         var symbolNow = this.players.player1.my_turn ? this.players.player1.symbol : this.players.player2.symbol;
                         this.board.update_board(box.dataset['index'], symbolNow);
-                        box.innerText = this.board.list[box.dataset['index']];
+
+                        UI.change_element_info(box, this.board.list[box.dataset['index']]);
+
                         console.log(this.board.display_board());
 
                         await sleep(200); // after 0.2 second do the rest
 
                         // check game before change the turns of players
                         // if win(return true that meaning end the game)
-                        if(Game.game_logic_winor(this.board.list) || this.board.board_isfull()) {
-                            this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2);
-                            this.destroy_game();
-                            return;
+                        if(Game.game_winner_logic(this.board.list) || this.board.board_isfull()) {
+                            if(Game.game_winner_logic(this.board.list) && this.board.board_isfull()) {
+                                this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2); // with specific player won
+                                return;
+                            } else if(Game.game_winner_logic(this.board.list) && !this.board.board_isfull()) {
+                                this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2); // with specific player won
+                                return;
+                            } else {
+                                // with no player won
+                                this.end_game();
+                                return;
+                            }
                         }
 
                         // change the turn of players
-                        this.player_turn('my_turn');
+                        this.player_turn(false);
+                    }
+                }
+            })
+        } else {
+            // get user info only
+            if(startType != 'restarted') {
+                this.players.player1.choose_name();
+                this.players.player1.choose_symbol();
+                this.players.player2.name = Player.pc_player_info.name;
+                this.players.player2.symbol = Player.pc_player_info.symbol;
+            }
+
+            boxes_game.forEach(box => {
+                box.onclick = async ()=> {
+                    if(!this.board.list[box.dataset['index']]) { // if empty box >>
+                        var symbolNow = this.players.player1.my_turn ? this.players.player1.symbol : this.players.player2.symbol;
+                        this.board.update_board(box.dataset['index'], symbolNow);
+
+                        UI.change_element_info(box, this.board.list[box.dataset['index']]);
+
+                        console.log(this.board.display_board());
+
+                        await sleep(200); // after 0.2 second do the rest
+
+                        // check game before change the turns of players
+                        // if win(return true that meaning end the game)
+                        if(Game.game_winner_logic(this.board.list) || this.board.board_isfull()) {
+                            if(Game.game_winner_logic(this.board.list) && this.board.board_isfull()) {
+                                this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2); // with specific player won
+                                return;
+                            } else if(Game.game_winner_logic(this.board.list) && !this.board.board_isfull()) {
+                                this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2); // with specific player won
+                                return;
+                            } else {
+                                // with no player won
+                                this.end_game();
+                                return;
+                            }
+                        }
+
+                        // change the turn of players
+                        this.player_turn(false);
                     }
                 }
             })
@@ -219,30 +282,29 @@ class Game {
 
     end_game(playerWon) {
         console.log('in end game')
-        playerWon.wins++;
         if(playerWon) {
-            alert(`the Winner Player is ${playerWon.name}`);
+            playerWon.wins++;
+            alert(`The Winner Player is: ${playerWon.name}`);
         } else {
-            alert('non Winner in this Game....');
+            alert('No Winner in this Game....');
         }
 
         // make all are empty to use again
-        this.player_turn('default');
-        boxes_game.forEach(box => box.innerHTML = '');
+        this.player_turn(true);
+        UI.reset_board();
 
         var confirming = confirm('do you want to restart the game?');
         if(confirming) {
             this.restart_game();
         }else {
             this.game_result();
-            hideShow('back');
         }
     }
 
     restart_game() {
         console.log('in restart game')
         this.destroy_game();
-        var newGame = new Game(this.game_type, this.game_time, this.players, this.boxes_elements);
+        var newGame = new Game(this.game_type, this.game_time, this.players);
         newGame.start_game('restarted');
     }
 
@@ -255,12 +317,20 @@ class Game {
         } else {
             alert(`No one win, with total games: ${Game.total_gaming}`);
         }
-        this.destroy_game();
         Game.total_gaming = 0;
+        this.destroy_game();
+        hideShow('main');
     }
 
-    player_turn(what) {
-        if(what == 'default') {
+    destroy_game() {
+        console.log('in destroying the game')
+        Player.player_number = 0;
+        UI.reset_all_info();
+    }
+
+    // Functions Used as(Static)
+    player_turn(isDefault) {
+        if(isDefault) {
             this.players.player1.my_turn = true;
             this.players.player2.my_turn = false;
         } else {
@@ -272,13 +342,5 @@ class Game {
                 this.players.player2.my_turn = false;
             }
         }
-    }
-
-    destroy_game() {
-        console.log('in destroying the game')
-        Player.player_number = 0;
-        this.boxes_elements.forEach(box => {
-            box.onclick = null;
-        })
     }
 }
