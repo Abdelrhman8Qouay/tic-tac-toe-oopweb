@@ -77,11 +77,7 @@ class Player {
 
 class Board{
     constructor() {
-        this.list = [
-            '','','',
-            '','','',
-            '','',''
-        ];
+        this.list = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     }
 
     display_board() {
@@ -89,23 +85,39 @@ class Board{
     }
 
     update_board(index, symbol) {
-        if(!this.list[index]) this.list[index] = symbol;
+        if(!index || !symbol || index < 0 || index > 9) {
+            console.error("Board Error: update board can not work, check the problem!");
+            return;
+        }
+        if(!this.list[index]) {
+            console.error("Board Error: update board can not work, check the problem!");
+            return;
+        }
+        this.list[index] = symbol;
     }
 
     reset_board() {
-        this.list = [
-            '','','',
-            '','','',
-            '','',''
-        ];
+        this.list = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     }
 
     board_isfull() {
-        if(this.list[0] && this.list[1] && this.list[2] && this.list[3] && this.list[4] && this.list[5] && this.list[6] && this.list[7] && this.list[8]) {
+        if(typeof this.list[0] != 'number' && typeof this.list[1] != 'number' && typeof this.list[2] != 'number' && typeof this.list[3] != 'number' && typeof this.list[4] != 'number' && typeof this.list[5] != 'number' && typeof this.list[6] != 'number' && typeof this.list[7] != 'number' && typeof this.list[8] != 'number') {
             return true;
         } else {
             return false;
         }
+    }
+
+    available_board_places(wantCondition = true /* true >> return boolean | false >> return array */) {
+        if(wantCondition) { // return boolean
+            return this.list.some(place=> typeof place == 'number');
+        } else { // return array
+            return this.list.filter(place=> typeof place == 'number');
+        }
+    }
+
+    checkItemEmpty(placeIndex) {
+        return typeof this.list[placeIndex] == 'number';
     }
 }
 
@@ -142,6 +154,10 @@ class UI {
     static changeAIPlayerInfo(name, symbol) {
         Player.pc_player_info.name = name;
         Player.pc_player_info.symbol = symbol;
+    }
+
+    handleAIshow() {
+
     }
 }
 
@@ -204,13 +220,10 @@ class Game {
 
             boxes_game.forEach(box => {
                 box.onclick = async ()=> {
-                    if(!this.board.list[box.dataset['index']]) { // if empty box >>
+                    if(this.board.checkItemEmpty([box.dataset['index']])) { // if empty box >>
                         var symbolNow = this.players.player1.my_turn ? this.players.player1.symbol : this.players.player2.symbol;
                         this.board.update_board(box.dataset['index'], symbolNow);
-
                         UI.change_element_info(box, this.board.list[box.dataset['index']]);
-
-                        console.log(this.board.display_board());
 
                         await sleep(200); // after 0.2 second do the rest
 
@@ -246,34 +259,36 @@ class Game {
 
             boxes_game.forEach(box => {
                 box.onclick = async ()=> {
-                    if(!this.board.list[box.dataset['index']]) { // if empty box >>
-                        var symbolNow = this.players.player1.my_turn ? this.players.player1.symbol : this.players.player2.symbol;
-                        this.board.update_board(box.dataset['index'], symbolNow);
+                    if(this.board.checkItemEmpty([box.dataset['index']])) { // if empty box >>
+                        if(this.players.player1.my_turn) { // if human Player
+                            var symbolNow = this.players.player1.symbol;
+                            this.board.update_board(box.dataset['index'], symbolNow);
+                            box.innerText = symbolNow;
+                            console.log('this work')
 
-                        UI.change_element_info(box, this.board.list[box.dataset['index']]);
+                            await sleep(200); // after 0.2 second do the rest
 
-                        console.log(this.board.display_board());
-
-                        await sleep(200); // after 0.2 second do the rest
-
-                        // check game before change the turns of players
-                        // if win(return true that meaning end the game)
-                        if(Game.game_winner_logic(this.board.list) || this.board.board_isfull()) {
-                            if(Game.game_winner_logic(this.board.list) && this.board.board_isfull()) {
-                                this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2); // with specific player won
-                                return;
-                            } else if(Game.game_winner_logic(this.board.list) && !this.board.board_isfull()) {
-                                this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2); // with specific player won
-                                return;
-                            } else {
-                                // with no player won
-                                this.end_game();
-                                return;
+                            // check game before change the turns of players
+                            // if win(return true that meaning end the game)
+                            if(Game.game_winner_logic(this.board.list) || this.board.board_isfull()) {
+                                if(Game.game_winner_logic(this.board.list) && this.board.board_isfull()) {
+                                    this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2); // with specific player won
+                                    return;
+                                } else if(Game.game_winner_logic(this.board.list) && !this.board.board_isfull()) {
+                                    this.end_game(this.players.player1.my_turn ? this.players.player1 : this.players.player2); // with specific player won
+                                    return;
+                                } else {
+                                    // with no player won
+                                    this.end_game();
+                                    return;
+                                }
                             }
-                        }
 
-                        // change the turn of players
-                        this.player_turn(false);
+                            // change the turn of players
+                            this.player_turn();
+                            await sleep(2000); // after 0.5 second make ai playing..
+                            this.ai_playing();
+                        }
                     }
                 }
             })
@@ -286,7 +301,7 @@ class Game {
             playerWon.wins++;
             alert(`The Winner Player is: ${playerWon.name}`);
         } else {
-            alert('No Winner in this Game....');
+            alert('Tie.. No Winner in this Game....');
         }
 
         // make all are empty to use again
@@ -329,7 +344,7 @@ class Game {
     }
 
     // Functions Used as(Static)
-    player_turn(isDefault) {
+    player_turn(isDefault= false) {
         if(isDefault) {
             this.players.player1.my_turn = true;
             this.players.player2.my_turn = false;
@@ -342,5 +357,79 @@ class Game {
                 this.players.player2.my_turn = false;
             }
         }
+    }
+
+    ai_playing() {
+        // =========== AI Play Process ===========
+        var aiSymbol = this.players.player2.symbol;
+        var huSymbol = this.players.player1.symbol;
+        let possibleMoves = this.board.available_board_places(false);
+        let moveIndex = null;
+
+        var turns_win = [];
+
+        // check user turns before win
+        if(!moveIndex) {
+            console.log('check user work')
+            for(let i = 0; i < possibleMoves.length; i++) {
+                let tempBoard = [...this.board.list];
+                tempBoard[possibleMoves[i]]= huSymbol;
+                console.log(tempBoard[possibleMoves[i]]);
+                if(Game.game_winner_logic(tempBoard)) {
+                    console.log('win turn for user', possibleMoves[i]);
+                    turns_win.push(possibleMoves[i]);
+                }
+            }
+            if(selectRandom(turns_win)) moveIndex = selectRandom(turns_win);
+        }
+        console.log('turns arr after user', turns_win)
+
+        // check ai turn to play a win place
+        if(!moveIndex) {
+            console.log('check ai work')
+            for(let i = 0; i < possibleMoves.length; i++) {
+                let tempBoard = [...this.board.list];
+                tempBoard[possibleMoves[i]]= aiSymbol;
+                if(Game.game_winner_logic(tempBoard)) {
+                    console.log('win turn for ai', possibleMoves[i]);
+                    turns_win.push(possibleMoves[i]);
+                }
+            }
+            if(selectRandom(turns_win)) moveIndex = selectRandom(turns_win);
+        }
+        console.log('turns arr after ai', turns_win)
+
+        // if all empty move to random place on the board
+        if(!moveIndex) {
+            console.log('made it random on all')
+            moveIndex = selectRandom(possibleMoves);
+        }
+        console.log(moveIndex, possibleMoves);
+        console.log('=======================================================')
+
+        // =========== Change the data ===========
+        if(moveIndex) {
+            var ele_box = document.querySelector(`[data-index="${moveIndex}"]`);
+            this.board.update_board(moveIndex, aiSymbol);
+            ele_box.innerText = aiSymbol;
+
+            // check game before change the turns of players
+            // if win(return true that meaning end the game)
+            if(Game.game_winner_logic(this.board.list) || this.board.board_isfull()) {
+                if(Game.game_winner_logic(this.board.list) && this.board.board_isfull()) {
+                    this.end_game(this.players.player2); // with specific player won
+                    return;
+                } else if(Game.game_winner_logic(this.board.list) && !this.board.board_isfull()) {
+                    this.end_game(this.players.player2); // with specific player won
+                    return;
+                } else {
+                    // with no player won
+                    this.end_game();
+                    return;
+                }
+            }
+        }
+
+        this.player_turn();
     }
 }

@@ -63,12 +63,14 @@ function removeClass(el, className)
     }
 }
 
+function selectRandom(arr) {
+    if(!arr.length) return;
+    return arr[Math.floor(Math.random() * arr.length)];
+}
 
 const sleep = (milliseconds) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
-
-
 
 
 
