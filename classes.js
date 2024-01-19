@@ -12,10 +12,8 @@ playerSymbol2 = document.getElementById('playerSymbol2');
 
 class Player {
     static player_number = 0;
-    static pc_player_info = {
-        name: 'AI',
-        symbol: 'O',
-    };
+    static AIname= 'AI Player';
+    static AIsymbol= 'A';
     name= '';
     symbol= '';
     wins = 0;
@@ -77,7 +75,7 @@ class Player {
 
 class Board{
     constructor() {
-        this.list = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        this.list = [{i: 0, v: ""}, {i: 1, v: ""}, {i: 2, v: ""}, {i: 3, v: ""}, {i: 4, v: ""}, {i: 5, v: ""}, {i: 6, v: ""}, {i: 7, v: ""}, {i: 8, v: ""}];
     }
 
     display_board() {
@@ -85,7 +83,7 @@ class Board{
     }
 
     update_board(index, symbol) {
-        if(!index || !symbol || index < 0 || index > 9) {
+        if(!symbol || index < 0 || index > 9) {
             console.error("Board Error: update board can not work, check the problem!");
             return;
         }
@@ -93,15 +91,15 @@ class Board{
             console.error("Board Error: update board can not work, check the problem!");
             return;
         }
-        this.list[index] = symbol;
+        this.list[index].v = symbol;
     }
 
     reset_board() {
-        this.list = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        this.list = [{i: 0, v: ""}, {i: 1, v: ""}, {i: 2, v: ""}, {i: 3, v: ""}, {i: 4, v: ""}, {i: 5, v: ""}, {i: 6, v: ""}, {i: 7, v: ""}, {i: 8, v: ""}];
     }
 
     board_isfull() {
-        if(typeof this.list[0] != 'number' && typeof this.list[1] != 'number' && typeof this.list[2] != 'number' && typeof this.list[3] != 'number' && typeof this.list[4] != 'number' && typeof this.list[5] != 'number' && typeof this.list[6] != 'number' && typeof this.list[7] != 'number' && typeof this.list[8] != 'number') {
+        if(this.list[0].v && this.list[1].v && this.list[2].v && this.list[3].v && this.list[4].v && this.list[5].v && this.list[6].v && this.list[7].v && this.list[8].v) {
             return true;
         } else {
             return false;
@@ -110,14 +108,14 @@ class Board{
 
     available_board_places(wantCondition = true /* true >> return boolean | false >> return array */) {
         if(wantCondition) { // return boolean
-            return this.list.some(place=> typeof place == 'number');
+            return this.list.some(place=> place.v == '');
         } else { // return array
-            return this.list.filter(place=> typeof place == 'number');
+            return this.list.filter(place=> place.v == '');
         }
     }
 
     checkItemEmpty(placeIndex) {
-        return typeof this.list[placeIndex] == 'number';
+        return this.list[placeIndex].v == '';
     }
 }
 
@@ -152,8 +150,8 @@ class UI {
     }
 
     static changeAIPlayerInfo(name, symbol) {
-        Player.pc_player_info.name = name;
-        Player.pc_player_info.symbol = symbol;
+        Player.AIname = name;
+        Player.AIsymbol = symbol;
     }
 
     handleAIshow() {
@@ -177,30 +175,54 @@ class Game {
     }
 
     static game_winner_logic(board_list) {
-        if(board_list[0] == board_list[1] && board_list[1] == board_list[2] && board_list[2]) {
+        if(board_list[0].v == board_list[1].v && board_list[1].v == board_list[2].v && board_list[2].v != '') {
             console.log('0 1 2')
             return true
-        } else if(board_list[3] == board_list[4] && board_list[4] == board_list[5] && board_list[5]) {
+            /*  0 1 2
+                - - -
+                - - - */
+        } else if(board_list[3].v == board_list[4].v && board_list[4].v == board_list[5].v && board_list[5].v) {
             console.log('3 4 5')
             return true
-        } else if(board_list[6] == board_list[7] && board_list[7] == board_list[8] && board_list[8]) {
+            /*  - - -
+                3 4 5
+                - - - */
+        } else if(board_list[6].v == board_list[7].v && board_list[7].v == board_list[8].v && board_list[8].v) {
             console.log('6 7 8')
             return true
-        } else if(board_list[0] == board_list[3] && board_list[3] == board_list[6] && board_list[6]) {
+            /*  - - -
+                - - -
+                6 7 8 */
+        } else if(board_list[0].v == board_list[3].v && board_list[3].v == board_list[6].v && board_list[6].v) {
             console.log('0 3 6')
             return true
-        } else if(board_list[1] == board_list[4] && board_list[4] == board_list[7] && board_list[7]) {
+            /*  0 - -
+                3 - -
+                6 - - */
+        } else if(board_list[1].v == board_list[4].v && board_list[4].v == board_list[7].v && board_list[7].v) {
             console.log('1 4 7')
             return true
-        } else if(board_list[2] == board_list[5] && board_list[5] == board_list[8] && board_list[8]) {
+            /*  - 1 -
+                - 4 -
+                - 7 - */
+        } else if(board_list[2].v == board_list[5].v && board_list[5].v == board_list[8].v && board_list[8].v) {
             console.log('2 5 8')
             return true
-        } else if(board_list[0] == board_list[4] && board_list[4] == board_list[8] && board_list[8]) {
+            /*  - - 2
+                - - 5
+                - - 8 */
+        } else if(board_list[0].v == board_list[4].v && board_list[4].v == board_list[8].v && board_list[8].v) {
             console.log('0 4 8')
             return true
-        } else if(board_list[2] == board_list[4] && board_list[4] == board_list[6] && board_list[6]) {
+            /*  0 - -
+                - 4 -
+                - - 8 */
+        } else if(board_list[2].v == board_list[4].v && board_list[4].v == board_list[6].v && board_list[6].v) {
             console.log('2 4 6')
             return true
+            /*  - - 2
+                - 4 -
+                6 - - */
         } else {
             console.log('not yet')
             return false;
@@ -208,7 +230,6 @@ class Game {
     }
 
     start_game(startType) {
-        console.log('in playing game now')
         if(this.game_type == 'human') {
             // get users info
             if(startType != 'restarted') {
@@ -223,7 +244,7 @@ class Game {
                     if(this.board.checkItemEmpty([box.dataset['index']])) { // if empty box >>
                         var symbolNow = this.players.player1.my_turn ? this.players.player1.symbol : this.players.player2.symbol;
                         this.board.update_board(box.dataset['index'], symbolNow);
-                        UI.change_element_info(box, this.board.list[box.dataset['index']]);
+                        box.innerText = this.board.list[box.dataset['index']].v;
 
                         await sleep(200); // after 0.2 second do the rest
 
@@ -253,8 +274,11 @@ class Game {
             if(startType != 'restarted') {
                 this.players.player1.choose_name();
                 this.players.player1.choose_symbol();
-                this.players.player2.name = Player.pc_player_info.name;
-                this.players.player2.symbol = Player.pc_player_info.symbol;
+                this.players.player2.name = Player.AIname;
+                playerName2.innerText = Player.AIname;
+                this.players.player2.symbol = Player.AIsymbol;
+                playerSymbol2.innerText = Player.AIsymbol;
+                console.log(this.players.player2.name, this.players.player2.symbol);
             }
 
             boxes_game.forEach(box => {
@@ -296,7 +320,6 @@ class Game {
     }
 
     end_game(playerWon) {
-        console.log('in end game')
         if(playerWon) {
             playerWon.wins++;
             alert(`The Winner Player is: ${playerWon.name}`);
@@ -317,14 +340,12 @@ class Game {
     }
 
     restart_game() {
-        console.log('in restart game')
         this.destroy_game();
         var newGame = new Game(this.game_type, this.game_time, this.players);
         newGame.start_game('restarted');
     }
 
     game_result() {
-        console.log('in results game')
         if(this.players.player1.wins > this.players.player2.wins) {
             alert(`the Final Winner Player is ${this.players.player1.name} with total wins: ${this.players.player1.wins}`);
         } else if (this.players.player1.wins < this.players.player2.wins) {
@@ -338,7 +359,6 @@ class Game {
     }
 
     destroy_game() {
-        console.log('in destroying the game')
         Player.player_number = 0;
         UI.reset_all_info();
     }
@@ -361,6 +381,21 @@ class Game {
 
     ai_playing() {
         // =========== AI Play Process ===========
+        if(!this.board.available_board_places(true)) {
+            if(Game.game_winner_logic(this.board.list) || this.board.board_isfull()) {
+                if(Game.game_winner_logic(this.board.list) && this.board.board_isfull()) {
+                    this.end_game(this.players.player2); // with specific player won
+                    return;
+                } else if(Game.game_winner_logic(this.board.list) && !this.board.board_isfull()) {
+                    this.end_game(this.players.player2); // with specific player won
+                    return;
+                } else {
+                    // with no player won
+                    this.end_game();
+                    return;
+                }
+            }
+        }
         var aiSymbol = this.players.player2.symbol;
         var huSymbol = this.players.player1.symbol;
         let possibleMoves = this.board.available_board_places(false);
@@ -369,47 +404,38 @@ class Game {
         var turns_win = [];
 
         // check user turns before win
-        if(!moveIndex) {
-            console.log('check user work')
+        if(typeof moveIndex != 'number') {
             for(let i = 0; i < possibleMoves.length; i++) {
                 let tempBoard = [...this.board.list];
-                tempBoard[possibleMoves[i]]= huSymbol;
-                console.log(tempBoard[possibleMoves[i]]);
+                tempBoard[possibleMoves[i].i]= {i: possibleMoves[i].i, v: huSymbol, test: 'here'};
                 if(Game.game_winner_logic(tempBoard)) {
-                    console.log('win turn for user', possibleMoves[i]);
-                    turns_win.push(possibleMoves[i]);
+                    turns_win.push(possibleMoves[i].i);
                 }
             }
-            if(selectRandom(turns_win)) moveIndex = selectRandom(turns_win);
+            if(turns_win.length) {
+                moveIndex = selectRandom(turns_win) || turns_win[0];
+            }
         }
-        console.log('turns arr after user', turns_win)
 
         // check ai turn to play a win place
-        if(!moveIndex) {
-            console.log('check ai work')
+        if(typeof moveIndex != 'number') {
             for(let i = 0; i < possibleMoves.length; i++) {
                 let tempBoard = [...this.board.list];
-                tempBoard[possibleMoves[i]]= aiSymbol;
+                tempBoard[possibleMoves[i].i]= {i: possibleMoves[i].i, v: aiSymbol};
                 if(Game.game_winner_logic(tempBoard)) {
-                    console.log('win turn for ai', possibleMoves[i]);
-                    turns_win.push(possibleMoves[i]);
+                    turns_win.push(possibleMoves[i].i);
                 }
             }
-            if(selectRandom(turns_win)) moveIndex = selectRandom(turns_win);
+            if(turns_win.length) moveIndex = selectRandom(turns_win) || turns_win[0];
         }
-        console.log('turns arr after ai', turns_win)
 
         // if all empty move to random place on the board
-        if(!moveIndex) {
-            console.log('made it random on all')
-            moveIndex = selectRandom(possibleMoves);
-        }
-        console.log(moveIndex, possibleMoves);
-        console.log('=======================================================')
+        if(typeof moveIndex != 'number') moveIndex = selectRandom(possibleMoves).i || possibleMoves[0].i;
 
         // =========== Change the data ===========
-        if(moveIndex) {
+        if(typeof moveIndex == 'number') {
             var ele_box = document.querySelector(`[data-index="${moveIndex}"]`);
+            console.log(moveIndex, aiSymbol)
             this.board.update_board(moveIndex, aiSymbol);
             ele_box.innerText = aiSymbol;
 
@@ -428,6 +454,8 @@ class Game {
                     return;
                 }
             }
+        }else {
+            console.error("Game Error: Ai Playing func has an error with move index");
         }
 
         this.player_turn();

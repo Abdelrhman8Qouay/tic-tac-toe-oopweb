@@ -12,7 +12,7 @@
     box-sizing: border-box;
     padding: 0;
     margin: 0;
-    font-family: system-ui;
+    font-family: cursive, math, serif;
 }
 *::selection {
     color: #000;
@@ -190,4 +190,27 @@
 .playing_content .info .right {
     display: flex;
     justify-content: end;
+}
+
+@media (max-width: 720px) {
+    body .main_menu, body .playing_content {
+        padding: 0;
+    }
+
+    body .main_menu h1, body .main_menu h2 {
+        font-size: larger;
+    }
+
+    body .playing_content h1, body .playing_content h2 {
+        font-size: larger;
+    }
+
+    body .playing_content, body .main_menu {
+        border: none;
+    }
+    body .playing_content .content {
+        width: 220px;
+        height: 220px;
+        border: none;
+    }
 }
